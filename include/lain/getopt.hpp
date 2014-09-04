@@ -1,0 +1,447 @@
+/*
+ * getopt.hpp: Header-only Simplified Option Parser
+ *
+ * Author: Lain Lee Supe (lainproliant)
+ * Date: Fri August 29, 2014
+ */
+#ifndef __LAIN_GETOPT_H
+#define __LAIN_GETOPT_H
+
+#include <set>
+#include <map>
+#include <string>
+#include <iostream>
+
+#include "lain/exception.hpp"
+#include "lain/string.hpp"
+
+namespace lain {
+   namespace getopt {
+      using namespace std;
+      using namespace lain;
+      using namespace lain::str;
+
+      const string EMPTY_STRING = "";
+      const list<string> EMPTY_STRING_LIST = {};
+      
+      vector<string> _argv_to_vector(int argc, char** argv) {
+         vector<string> vec;
+         for (int x = 0; x < argc; x++) {
+            vec.push_back(string(argv[x]));
+         }
+
+         return vec;
+      }
+
+      string _char_to_str(char c) {
+         string str;
+         str.push_back(c);
+         return str;
+      }
+
+      /**
+       * A base exception for invalid command line options.
+       */
+      class ArgvException : public Exception {
+      public:
+         ArgvException(const string& message) :
+            Exception(message) {}
+      };
+
+      class MissingParameterException : public ArgvException {
+      public:
+         MissingParameterException(const string& opt_str) :
+            ArgvException(string("No parameter specified for option '--" +
+                     opt_str + "'.")),
+            option(string("--") + opt_str) { }
+
+         MissingParameterException(const char& opt_c) :
+            ArgvException(string("No parameter specified for option '-" +
+                     _char_to_str(opt_c) + "'.")),
+            option(string("-") + _char_to_str(opt_c)) { }
+
+         const string& get_option() {
+            return option;
+         }
+
+      private:
+         string option;
+      };
+
+      class UndefinedOptionException : public ArgvException {
+      public:
+         UndefinedOptionException(const string& opt_str) :
+            ArgvException(string("Option '--" +
+                     opt_str + "' is undefined.")),
+            option(string("--") + opt_str) { }
+
+         UndefinedOptionException(const char& opt_c) :
+            ArgvException(string("Option '-" +
+                     _char_to_str(opt_c) + "' is undefined.")),
+            option(string("-") + _char_to_str(opt_c)) { }
+
+         const string& get_option() {
+            return option;
+         }
+
+      private:
+         string option;
+      };
+
+      struct Option {
+         Option() : repr(""), has_param(false) {}
+
+         string repr;
+         bool has_param;
+      };
+
+      enum parser_mode_t {
+         PARSE_INIT,
+         PARSE_ARGUMENT,
+         PARSE_SHORTOPT,
+         PARSE_LONGOPT
+      };
+
+#ifdef LAIN_OPTARG_DEBUG
+      inline ostream& operator<<(ostream& out, const Option& opt) {
+         out << "Option(\"repr\"=>" << opt.repr << ", "
+             << "\"has_param\"=>" << str::bool_repr(opt.has_param) << ")";
+         return out;
+      }
+      
+      template <class T>
+      ostream& operator<<(ostream& out, const map<T, string>& map) {
+         out << repr(map);
+         return out;
+      }
+
+      inline ostream& operator<<(ostream& out, const list<string>& values) {
+         out << repr(values);
+         return out;
+      }
+#endif
+   
+      class OptionParser {
+      public:
+         /**
+          * Constructs an OptionParser object.
+          *
+          * @param argc The number of elements in the argv array, as is
+          *    provided to main().
+          * @param argv An array of string pointers, as is provided by main().
+          * @param shortops A string containing definitions of short options.
+          *    Short options are specified by a single character.  If the
+          *    option requires a parameter, this may be specified by
+          *    following the character with a colon (':').  Optional
+          *    parameters are not supported by this class.
+          * @param longopts A vector of strings specifying the long options
+          *    which are available.  Long options are an alphanumeric string.
+          *    If the option requires a parameter, this may be specified
+          *    by ending the string with an equals sign ('=').  Optional
+          *    parameters are not supported by this class.
+          */
+         static OptionParser parse(int argc, char** argv,
+               const string& shortopts, const vector<string>& longopts) {
+            OptionParser parser(argc, argv, shortopts, longopts);
+            parser.parse();
+            return parser;
+         }
+
+         /** Virtual destructor. */
+         virtual ~OptionParser() {}
+         
+         /**
+          * Determine if an option was provided.
+          *
+          * @param opt The option to check for.
+          * @return True if the option was provided, false otherwise.
+          */
+         bool check_option(const string& opt) const {
+            return longopts_specified.find(opt) != longopts_specified.end();
+         }
+         
+         /**
+          * Determine the number of times the given option was specified.
+          *
+          * @param opt The option to check.
+          * @return The number of times the option was provided, or 0
+          *    if the option was not provided or is not defined.
+          */
+         int get_count(const string& opt) const {
+            auto iter = longopts_specified.find(opt);
+            if (iter != longopts_specified.end()) {
+               return iter->second;
+            } else {
+               return 0;
+            }
+         }
+
+         int get_count(const char& opt_c) const {
+            auto iter = shortopts_specified.find(opt_c);
+            if (iter != shortopts_specified.end()) {
+               return iter->second; 
+            } else {
+               return 0;
+            }
+         }
+         
+         /**
+          * Fetch the list of non-option arguments provided.
+          *
+          * @return The vector of non-option arguments provided, or an empty
+          *    vector if no options were provided.
+          */
+         const vector<string>& get_args() const {
+            return args;
+         }
+         
+         /**
+          * Fetch the parameter for the option provided.  Only one parameter
+          * per option is recorded, that being the last one provided.
+          *
+          * If the option wasn't provided or doesn't accept parameters, an
+          * empty string will be returned. Users should first call
+          * check_option() to determine if the option was specified before
+          * calling this function for reliable results.
+          *
+          * @param opt The option for which to fetch the parameter.
+          * @return The parameter provided for the option, or an empty string
+          *    if the parameter is not defined, was not provided, or does
+          *    not accept a parameter.
+          */
+         template <class T>
+         const string& get_param(const T& opt_token) const {
+            const list<string>& params = get_param_list(opt_token);
+            if (params.size() > 0) {
+               return params.front();
+            } else {
+               return EMPTY_STRING;
+            }
+         }
+
+         const list<string>& get_param_list(const string& opt) const {
+            auto iter = longopts_values.find(opt);
+            if (iter != longopts_values.end()) {
+               return iter->second;
+            } else {
+               return EMPTY_STRING_LIST;
+            }
+         }
+
+         const list<string>& get_param_list(const char& opt_c) const {
+            auto iter = shortopts_values.find(opt_c);
+            if (iter != shortopts_values.end()) {
+               return iter->second;
+            } else {
+               return EMPTY_STRING_LIST;
+            }
+         }
+         
+#ifdef LAIN_OPTARG_DEBUG
+         void debug(ostream& out) {
+            out << "argv = " << str::repr(argv) << endl;
+            out << "shortopts = " << str::repr(shortopts, true) << endl;
+            out << "longopts = " << str::repr(longopts, true) << endl;
+            out << "shortopts_specified = "
+                << str::repr(shortopts_specified, true) << endl;
+            out << "longopts_specified = "
+                << str::repr(longopts_specified, true) << endl;
+            out << "shortopts_values = "
+                << str::repr(shortopts_values, true) << endl;
+            out << "longopts_values = " 
+                << str::repr(longopts_values, true) << endl;
+            out << "args = " << str::repr(args) << endl;
+         }
+#endif
+         
+      protected:
+         OptionParser(int argc, char** argv,
+               const string& shortopts, vector<string> longopts) :
+            argv(_argv_to_vector(argc, argv)) {
+            _parse_shortopts(shortopts);
+            _parse_longopts(longopts);
+         }
+         
+         /**
+          * Parse the argument list provided at construction.
+          */
+         void parse() {
+            for (size_t x = 0; x < argv.size(); x++) {
+               parser_mode_t parser_mode = PARSE_INIT;
+               string token = EMPTY_STRING;
+               string optarg = argv[x];
+
+               for (size_t y = 0; y < optarg.length(); y++) {
+                  switch (parser_mode) {
+                  case PARSE_INIT:
+                     if (y == 0 && optarg[y] == '-') {
+                        // optarg is likely a shortopt or longopt,
+                        // start with shortopt.
+                        parser_mode = PARSE_SHORTOPT;
+                        
+                     } else {
+                        // optarg is a free argument;
+                        parser_mode = PARSE_ARGUMENT;
+                        token.push_back(optarg[y]);
+                     }
+                     break;
+
+                  case PARSE_ARGUMENT:
+                     token.push_back(optarg[y]);
+                     break;
+
+                  case PARSE_SHORTOPT:
+                     if (y == 1 && optarg[y] == '-') {
+                        // We're actually parsing a longopt.
+                        parser_mode = PARSE_LONGOPT;
+
+                     } else {
+                        Option opt = _get_opt(optarg[y]);
+                        if (opt.has_param) {
+                           if (y + 1 >= optarg.length() &&
+                               x + 1 < argv.size()) {
+                              _opt_specified(optarg[y], argv[++x]);
+
+                           } else {
+                              throw MissingParameterException(optarg[y]); 
+                           }
+                        } else {
+                           _opt_specified(optarg[y]);
+                        }
+                     }
+                     break;
+
+                  case PARSE_LONGOPT:
+                     token.push_back(optarg[y]);
+                     break;
+
+                  default:
+                     throw ArgvException("Invalid argv parser state.");
+                  }
+               }
+               
+               if (parser_mode == PARSE_LONGOPT) {
+                  Option opt = _get_opt(token);
+                  if (opt.has_param) {
+                     if (x + 1 < argv.size()) {
+                        _opt_specified(token, argv[++x]);
+
+                     } else {
+                        throw MissingParameterException(token);
+                     }
+                  } else {
+                     _opt_specified(token); 
+                  }
+
+               } else if (parser_mode == PARSE_ARGUMENT) {
+                  _arg_provided(token);
+               }
+            }
+         }
+
+         void _parse_shortopts(const string& shortopts_str) {
+            for (auto iter = shortopts_str.begin();
+                 iter != shortopts_str.end();
+                 iter++) {
+               Option opt;
+               string repr;
+               auto next = iter + 1;
+
+               repr.push_back(*iter);
+               opt.repr = repr;
+
+               if (next != shortopts_str.end() && *next == ':') {
+                  opt.has_param = true; 
+               }
+
+               shortopts[*iter] = opt;
+               
+               if (opt.has_param)
+                  iter++;
+            }
+         }
+
+         void _parse_longopts(const vector<string>& longoptsIn) {
+            for (string opt_str : longoptsIn) {
+               Option opt;
+               string repr;
+               
+               if (opt_str.length() > 2 &&
+                   opt_str.compare(opt_str.length() - 1, 1, "=") == 0) {
+                  opt.has_param = true;
+                  opt.repr = opt_str.substr(0, opt_str.length() - 2);
+
+               } else {
+                  opt.repr = opt_str;
+               }
+
+               longopts[opt.repr] = opt;
+            }
+         }
+
+         bool _is_option_defined(const string& opt_str) const {
+            return longopts.find(opt_str) != longopts.end();
+         }
+
+         bool _is_option_defined(const char& opt_c) const {
+            return shortopts.find(opt_c) != shortopts.end();
+         }
+
+         const Option& _get_opt(const string& opt_str) const {
+            auto iter = longopts.find(opt_str);
+            if (iter != longopts.end()) {
+               return iter->second;
+
+            } else {
+               throw UndefinedOptionException(opt_str);
+            }
+         }
+
+         const Option& _get_opt(const char& opt_c) const {
+            auto iter = shortopts.find(opt_c);
+            if (iter != shortopts.end()) {
+               return iter->second;
+            } else {
+               throw UndefinedOptionException(opt_c);
+            }
+         }
+
+         void _opt_specified(const string& opt_str) {
+            longopts_specified[opt_str] ++;
+         }
+
+         void _opt_specified(const char& opt_c) {
+            shortopts_specified[opt_c] ++;
+         }
+
+         void _opt_specified(const string& opt_str, const string& value) {
+            _opt_specified(opt_str);
+            longopts_values[opt_str].push_back(value);
+         }
+
+         void _opt_specified(const char& opt_c, const string& value) {
+            _opt_specified(opt_c);
+            shortopts_values[opt_c].push_back(value);
+         }
+
+         void _arg_provided(const string& arg) {
+            args.push_back(arg);
+         }
+         
+      private:
+         vector<string> argv;
+         
+         map<char, Option> shortopts;
+         map<string, Option> longopts;
+         
+         map<char, int> shortopts_specified;
+         map<string, int> longopts_specified;
+         map<char, list<string>> shortopts_values;
+         map<string, list<string>> longopts_values;
+
+         vector<string> args;
+      };
+   }
+}
+
+#endif
