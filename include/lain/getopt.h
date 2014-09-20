@@ -12,33 +12,17 @@
 #include <string>
 #include <iostream>
 
-#include "lain/exception.hpp"
-#include "lain/string.hpp"
+#include "lain/exception.h"
+#include "lain/string.h"
 
 namespace lain {
    namespace getopt {
       using namespace std;
       using namespace lain;
-      using namespace lain::str;
 
       const string EMPTY_STRING = "";
       const list<string> EMPTY_STRING_LIST = {};
       
-      vector<string> _argv_to_vector(int argc, char** argv) {
-         vector<string> vec;
-         for (int x = 0; x < argc; x++) {
-            vec.push_back(string(argv[x]));
-         }
-
-         return vec;
-      }
-
-      string _char_to_str(char c) {
-         string str;
-         str.push_back(c);
-         return str;
-      }
-
       /**
        * A base exception for invalid command line options.
        */
@@ -57,8 +41,8 @@ namespace lain {
 
          MissingParameterException(const char& opt_c) :
             ArgvException(string("No parameter specified for option '-" +
-                     _char_to_str(opt_c) + "'.")),
-            option(string("-") + _char_to_str(opt_c)) { }
+                     str::char_to_str(opt_c) + "'.")),
+            option(string("-") + str::char_to_str(opt_c)) { }
 
          const string& get_option() {
             return option;
@@ -77,8 +61,8 @@ namespace lain {
 
          UndefinedOptionException(const char& opt_c) :
             ArgvException(string("Option '-" +
-                     _char_to_str(opt_c) + "' is undefined.")),
-            option(string("-") + _char_to_str(opt_c)) { }
+                     str::char_to_str(opt_c) + "' is undefined.")),
+            option(string("-") + str::char_to_str(opt_c)) { }
 
          const string& get_option() {
             return option;
@@ -111,12 +95,12 @@ namespace lain {
       
       template <class T>
       ostream& operator<<(ostream& out, const map<T, string>& map) {
-         out << repr(map);
+         out << str::repr(map);
          return out;
       }
 
       inline ostream& operator<<(ostream& out, const list<string>& values) {
-         out << repr(values);
+         out << str::repr(values);
          return out;
       }
 #endif
@@ -257,7 +241,7 @@ namespace lain {
       protected:
          OptionParser(int argc, char** argv,
                const string& shortopts, vector<string> longopts) :
-            argv(_argv_to_vector(argc, argv)) {
+            argv(str::argv_to_vector(argc, argv)) {
             _parse_shortopts(shortopts);
             _parse_longopts(longopts);
          }

@@ -110,6 +110,23 @@ namespace lain {
          return vec;
       }
       
+
+      string char_to_str(char c) {
+         string str;
+         str.push_back(c);
+         return str;
+      }
+
+      /**
+       * Create a textual representation of the contents of the
+       * given iterable collection.  This can be useful in
+       * providing an insight into the structure of the data
+       * within the collection.
+       * 
+       * You should define an override of operator<<(const ostream&, T)
+       * for the value type of the collection provided unless ones
+       * already specified, e.g. for primitives and std::string.
+       */
       template <class T, class V = typename T::value_type>
       string repr(const T& coll) {
          ostringstream sb;
@@ -128,6 +145,16 @@ namespace lain {
          return sb.str();
       }
 
+      /**
+       * Create a textual representation of the contents of the
+       * given map.  This template method will work for any object
+       * which implements the interface of std::map, including
+       * std::unordered_map.
+       * 
+       * You should define an override of operator<<(const ostream&, T)
+       * for the mapped type of the map provided unless ones
+       * already specified, e.g. for primitives and std::string.
+       */
       template <class M, class K = typename M::key_type,
                 class V = typename M::mapped_type>
       string repr(M& map, bool pretty = false) {
@@ -151,7 +178,10 @@ namespace lain {
 
          return sb.str();
       }
-
+      
+      /**
+       * Print a textual representation of the given value.
+       */
       template <class T>
       string bool_repr(const T& val) {
          return val ? "true" : "false";

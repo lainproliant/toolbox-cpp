@@ -1,5 +1,5 @@
 #include <iostream>
-#include "lain/getopt.hpp"
+#include "lain/getopt.h"
 
 using namespace std;
 using namespace lain::getopt;
