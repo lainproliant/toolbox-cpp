@@ -1,9 +1,9 @@
 Lain's Personal C++ Toolbox
 ===========================
 
-A header-only meta library containing many custom tools and other
-header-only libraries which make C++ life easier.  Included among these
-are the following sets of tools:
+A header-only meta library with tools to make C++ life more fun.
+
+Included among these are the following sets of tools:
 
 + Custom Tools
   + `<lain/exception.h>`: A sensible Exception base class.
@@ -16,6 +16,8 @@ are the following sets of tools:
 + Submodules
   + **picojson**: a C++ JSON parser / serializer by Kazuho Oku
     + https://travis-ci.org/kazuho/picojson
+  + **tinyformat**: A minimal type safe printf() replacement by Chris Foster
+    + https://github.com/c42f/tinyformat
 
 Submodule Notes
 ---------------
