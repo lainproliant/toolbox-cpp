@@ -24,5 +24,5 @@ Submodule Notes
 
 Some of the directories under `include` are Git submodules.  When you clone this project, you'll notice that these directories are empty.  To pull all of these down, run the **`submodules.sh`** script at the root of the project.
 
-For more information on Git submodules, see 
+For more information on Git submodules, see
 http://git-scm.com/book/en/Git-Tools-Submodules

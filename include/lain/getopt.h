@@ -22,7 +22,7 @@ namespace lain {
 
       const string EMPTY_STRING = "";
       const list<string> EMPTY_STRING_LIST = {};
-      
+
       /**
        * A base exception for invalid command line options.
        */
@@ -86,33 +86,17 @@ namespace lain {
          PARSE_LONGOPT
       };
 
-#ifdef LAIN_OPTARG_DEBUG
       inline ostream& operator<<(ostream& out, const Option& opt) {
          out << "Option(\"repr\"=>" << opt.repr << ", "
              << "\"has_param\"=>" << str::bool_repr(opt.has_param) << ")";
          return out;
       }
-      
-      template <class T>
-      ostream& operator<<(ostream& out, const map<T, string>& map) {
-         out << str::repr(map);
-         return out;
-      }
 
-      inline ostream& operator<<(ostream& out, const list<string>& values) {
-         out << str::repr(values);
-         return out;
-      }
-#endif
-   
       class OptionParser {
       public:
          /**
-          * Constructs an OptionParser object.
+          * Constructs an option parser.
           *
-          * @param argc The number of elements in the argv array, as is
-          *    provided to main().
-          * @param argv An array of string pointers, as is provided by main().
           * @param shortops A string containing definitions of short options.
           *    Short options are specified by a single character.  If the
           *    option requires a parameter, this may be specified by
@@ -124,16 +108,15 @@ namespace lain {
           *    by ending the string with an equals sign ('=').  Optional
           *    parameters are not supported by this class.
           */
-         static OptionParser parse(int argc, char** argv,
-               const string& shortopts, const vector<string>& longopts) {
-            OptionParser parser(argc, argv, shortopts, longopts);
-            parser.parse();
-            return parser;
+         OptionParser(const string& shortopts,
+               const vector<string>& longopts) {
+            _parse_shortopts(shortopts);
+            _parse_longopts(longopts);
          }
 
          /** Virtual destructor. */
          virtual ~OptionParser() {}
-         
+
          /**
           * Determine if an option was provided.
           *
@@ -143,7 +126,7 @@ namespace lain {
          bool check_option(const string& opt) const {
             return longopts_specified.find(opt) != longopts_specified.end();
          }
-         
+
          /**
           * Determine the number of times the given option was specified.
           *
@@ -163,12 +146,12 @@ namespace lain {
          int get_count(const char& opt_c) const {
             auto iter = shortopts_specified.find(opt_c);
             if (iter != shortopts_specified.end()) {
-               return iter->second; 
+               return iter->second;
             } else {
                return 0;
             }
          }
-         
+
          /**
           * Fetch the list of non-option arguments provided.
           *
@@ -178,7 +161,7 @@ namespace lain {
          const vector<string>& get_args() const {
             return args;
          }
-         
+
          /**
           * Fetch the parameter for the option provided.  Only one parameter
           * per option is recorded, that being the last one provided.
@@ -203,6 +186,14 @@ namespace lain {
             }
          }
 
+         /**
+          * Fetch the list of parameters which were specified for
+          * the given longopt.
+          *
+          * @param opt The longopt which was parameterized.
+          * @return A list of strings, or an empty list if the
+          *    longopt was not specified.
+          */
          const list<string>& get_param_list(const string& opt) const {
             auto iter = longopts_values.find(opt);
             if (iter != longopts_values.end()) {
@@ -212,6 +203,14 @@ namespace lain {
             }
          }
 
+         /**
+          * Fetch the list of parameters which were specified for
+          * the given shortopt.
+          *
+          * @param opt_c The shortopt which was parameterized.
+          * @return A list of strings, or an empty list if the
+          *    shortopt was not specified.
+          */
          const list<string>& get_param_list(const char& opt_c) const {
             auto iter = shortopts_values.find(opt_c);
             if (iter != shortopts_values.end()) {
@@ -220,36 +219,26 @@ namespace lain {
                return EMPTY_STRING_LIST;
             }
          }
-         
-#ifdef LAIN_OPTARG_DEBUG
-         void debug(ostream& out) {
-            out << "argv = " << str::repr(argv) << endl;
-            out << "shortopts = " << str::repr(shortopts, true) << endl;
-            out << "longopts = " << str::repr(longopts, true) << endl;
-            out << "shortopts_specified = "
-                << str::repr(shortopts_specified, true) << endl;
-            out << "longopts_specified = "
-                << str::repr(longopts_specified, true) << endl;
-            out << "shortopts_values = "
-                << str::repr(shortopts_values, true) << endl;
-            out << "longopts_values = " 
-                << str::repr(longopts_values, true) << endl;
-            out << "args = " << str::repr(args) << endl;
-         }
-#endif
-         
-      protected:
-         OptionParser(int argc, char** argv,
-               const string& shortopts, vector<string> longopts) :
-            argv(str::argv_to_vector(argc, argv)) {
-            _parse_shortopts(shortopts);
-            _parse_longopts(longopts);
-         }
-         
+
          /**
-          * Parse the argument list provided at construction.
+          * Parse the given arguments into the option parser.
+          *
+          * @param argc The number of elements in the argv array, as is
+          *    provided to main().
+          * @param argv An array of string pointers, as is provided by main().
           */
-         void parse() {
+         OptionParser& parse(int argc, char** argv) {
+            return parse(str::argv_to_vector(argc, argv));
+         }
+
+         /**
+          * Parse the argument list provided.
+          *
+          * Any previously parsed options are cleared.
+          */
+         OptionParser& parse(const vector<string>& argv) {
+            _clear();
+
             for (size_t x = 0; x < argv.size(); x++) {
                parser_mode_t parser_mode = PARSE_INIT;
                string token = EMPTY_STRING;
@@ -262,7 +251,7 @@ namespace lain {
                         // optarg is likely a shortopt or longopt,
                         // start with shortopt.
                         parser_mode = PARSE_SHORTOPT;
-                        
+
                      } else {
                         // optarg is a free argument;
                         parser_mode = PARSE_ARGUMENT;
@@ -287,7 +276,7 @@ namespace lain {
                               _opt_specified(optarg[y], argv[++x]);
 
                            } else {
-                              throw MissingParameterException(optarg[y]); 
+                              throw MissingParameterException(optarg[y]);
                            }
                         } else {
                            _opt_specified(optarg[y]);
@@ -303,7 +292,7 @@ namespace lain {
                      throw ArgvException("Invalid argv parser state.");
                   }
                }
-               
+
                if (parser_mode == PARSE_LONGOPT) {
                   Option opt = _get_opt(token);
                   if (opt.has_param) {
@@ -314,15 +303,18 @@ namespace lain {
                         throw MissingParameterException(token);
                      }
                   } else {
-                     _opt_specified(token); 
+                     _opt_specified(token);
                   }
 
                } else if (parser_mode == PARSE_ARGUMENT) {
                   _arg_provided(token);
                }
             }
+
+            return *this;
          }
 
+      protected:
          void _parse_shortopts(const string& shortopts_str) {
             for (auto iter = shortopts_str.begin();
                  iter != shortopts_str.end();
@@ -335,11 +327,11 @@ namespace lain {
                opt.repr = repr;
 
                if (next != shortopts_str.end() && *next == ':') {
-                  opt.has_param = true; 
+                  opt.has_param = true;
                }
 
                shortopts[*iter] = opt;
-               
+
                if (opt.has_param)
                   iter++;
             }
@@ -349,7 +341,7 @@ namespace lain {
             for (string opt_str : longoptsIn) {
                Option opt;
                string repr;
-               
+
                if (opt_str.length() > 2 &&
                    opt_str.compare(opt_str.length() - 1, 1, "=") == 0) {
                   opt.has_param = true;
@@ -411,13 +403,19 @@ namespace lain {
          void _arg_provided(const string& arg) {
             args.push_back(arg);
          }
-         
+
+         void _clear() {
+            shortopts_specified.clear();
+            longopts_specified.clear();
+            shortopts_values.clear();
+            longopts_values.clear();
+            args.clear();
+         }
+
       private:
-         vector<string> argv;
-         
          map<char, Option> shortopts;
          map<string, Option> longopts;
-         
+
          map<char, int> shortopts_specified;
          map<string, int> longopts_specified;
          map<char, list<string>> shortopts_values;

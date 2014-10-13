@@ -1,13 +1,18 @@
+CXX=g++
 CXXFLAGS=-g --std=c++11 -DLAIN_OPTARG_DEBUG -I../include
 LDFLAGS=
 LDLIBS=
 
-SRCS=getopt_test.cpp
-BINS=$(subst .cpp,,$(SRCS))
+all: unit-test
 
-getopt_test: getopt_test.cpp
-	g++ $(CXXFLAGS) getopt_test.cpp -o getopt_test
+unit-test: build-all-tests
+	./run-tests.py
+
+build-all-tests: $(patsubst %.cpp, %.test, $(wildcard *.cpp))
+
+%.test: %.cpp Makefile
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
-	rm -f $(BINS)
+	rm -f *.test
 
