@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <functional>
+#include <vector>
 
 #include "lain/exception.h"
 

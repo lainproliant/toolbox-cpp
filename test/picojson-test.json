@@ -1,0 +1,25 @@
+{
+   "project": {
+      "name": "Lain's Toolbox",
+      "version": 1,
+      "awesome_ratio": 0.99,
+      "tasks": [
+         {
+            "name": "Write JSON",
+            "id": 1
+         },
+         {
+            "name": "Read JSON",
+            "id": 2
+         },
+         {
+            "name": "???",
+            "id": 3
+         },
+         {
+            "name": "Profit!",
+            "id": 999
+         }
+      ]
+   }
+}
