@@ -23,6 +23,14 @@ int main(int argc, char** argv) {
             })
             .run(cnull) == 1;
       })
+      .test("Forced failure by runtime exception", []()->bool {
+         ostream cnull(0);
+         return TestSuite("internal test suite")
+            .test("doomed test", []()->bool {
+               throw runtime_error("oh noes!");
+            })
+            .run(cnull) == 1;
+      })
       .run();
 
 }

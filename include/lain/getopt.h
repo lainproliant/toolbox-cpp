@@ -152,6 +152,10 @@ namespace lain {
             }
          }
 
+         const string& get_program_name() const {
+            return program_name;
+         }
+
          /**
           * Fetch the list of non-option arguments provided.
           *
@@ -239,7 +243,13 @@ namespace lain {
          OptionParser& parse(const vector<string>& argv) {
             _clear();
 
-            for (size_t x = 0; x < argv.size(); x++) {
+            if (argv.size() < 1) {
+               throw ArgvException("argv must have at least one entry (program name).");
+            }
+
+            _program_name_specified(argv[0]);
+
+            for (size_t x = 1; x < argv.size(); x++) {
                parser_mode_t parser_mode = PARSE_INIT;
                string token = EMPTY_STRING;
                string optarg = argv[x];
@@ -399,6 +409,10 @@ namespace lain {
             _opt_specified(opt_c);
             shortopts_values[opt_c].push_back(value);
          }
+         
+         void _program_name_specified(const string& program_name) {
+            this->program_name = program_name;
+         }
 
          void _arg_provided(const string& arg) {
             args.push_back(arg);
@@ -422,6 +436,8 @@ namespace lain {
          map<string, list<string>> longopts_values;
 
          vector<string> args;
+
+         string program_name;
       };
    }
 }
