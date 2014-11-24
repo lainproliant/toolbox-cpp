@@ -9,6 +9,7 @@
 #define __LAIN_TESTING_H
 
 #include <iostream>
+#include <algorithm>
 #include <functional>
 #include <vector>
 
@@ -107,6 +108,11 @@ namespace lain {
          if (! expr) {
             throw AssertionFailed(message);
          }
+      }
+      
+      template<class T>
+      inline bool lists_equal(const T& listA, const T& listB) {
+         return std::equal(listA.begin(), listA.end(), listB.begin());
       }
    }
 }

@@ -7,6 +7,8 @@
 
 namespace lain {
    namespace str {
+      using namespace std;
+
       /**
        * Determine if one string starts with another's characters.
        *
