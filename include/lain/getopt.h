@@ -88,7 +88,7 @@ namespace lain {
 
       inline ostream& operator<<(ostream& out, const Option& opt) {
          out << "Option(\"repr\"=>" << opt.repr << ", "
-             << "\"has_param\"=>" << str::bool_repr(opt.has_param) << ")";
+            << "\"has_param\"=>" << str::bool_repr(opt.has_param) << ")";
          return out;
       }
 
@@ -114,8 +114,42 @@ namespace lain {
             _parse_longopts(longopts);
          }
 
+         /**
+          * Copy constructor.  Creates a new copy of this option parser minus
+          * any cached argument parsing which may have been performed.
+          */
+         OptionParser(const OptionParser& parser) {
+            this->shortopts = shortopts;
+            this->longopts = longopts;
+         }
+
          /** Virtual destructor. */
          virtual ~OptionParser() {}
+
+         /**
+          * Create a new parser inheriting the short and long options of this one,
+          * plus the additional ones specified below.  Option specifications in the
+          * old OptionParser have precedence over the new ones and cannot be overridden
+          * or removed.
+          *
+          * @param shortops A string containing definitions of short options.
+          *    Short options are specified by a single character.  If the
+          *    option requires a parameter, this may be specified by
+          *    following the character with a colon (':').  Optional
+          *    parameters are not supported by this class.
+          * @param longopts A vector of strings specifying the long options
+          *    which are available.  Long options are an alphanumeric string.
+          *    If the option requires a parameter, this may be specified
+          *    by ending the string with an equals sign ('=').  Optional
+          *    parameters are not supported by this class.
+          */
+         OptionParser inherit(const string& shortopts, const vector<string>& longopts) const {
+            OptionParser new_parser(*this);
+            new_parser._parse_shortopts(shortopts);
+            new_parser._parse_longopts(longopts);
+
+            return new_parser;
+         }
 
          /**
           * Determine if an option was provided.
@@ -181,14 +215,14 @@ namespace lain {
           *    not accept a parameter.
           */
          template <class T>
-         const string& get_param(const T& opt_token) const {
-            const list<string>& params = get_param_list(opt_token);
-            if (params.size() > 0) {
-               return params.front();
-            } else {
-               return EMPTY_STRING;
+            const string& get_param(const T& opt_token) const {
+               const list<string>& params = get_param_list(opt_token);
+               if (params.size() > 0) {
+                  return params.front();
+               } else {
+                  return EMPTY_STRING;
+               }
             }
-         }
 
          /**
           * Fetch the list of parameters which were specified for
@@ -256,50 +290,50 @@ namespace lain {
 
                for (size_t y = 0; y < optarg.length(); y++) {
                   switch (parser_mode) {
-                  case PARSE_INIT:
-                     if (y == 0 && optarg[y] == '-') {
-                        // optarg is likely a shortopt or longopt,
-                        // start with shortopt.
-                        parser_mode = PARSE_SHORTOPT;
+                     case PARSE_INIT:
+                        if (y == 0 && optarg[y] == '-') {
+                           // optarg is likely a shortopt or longopt,
+                           // start with shortopt.
+                           parser_mode = PARSE_SHORTOPT;
 
-                     } else {
-                        // optarg is a free argument;
-                        parser_mode = PARSE_ARGUMENT;
-                        token.push_back(optarg[y]);
-                     }
-                     break;
-
-                  case PARSE_ARGUMENT:
-                     token.push_back(optarg[y]);
-                     break;
-
-                  case PARSE_SHORTOPT:
-                     if (y == 1 && optarg[y] == '-') {
-                        // We're actually parsing a longopt.
-                        parser_mode = PARSE_LONGOPT;
-
-                     } else {
-                        Option opt = _get_opt(optarg[y]);
-                        if (opt.has_param) {
-                           if (y + 1 >= optarg.length() &&
-                               x + 1 < argv.size()) {
-                              _opt_specified(optarg[y], argv[++x]);
-
-                           } else {
-                              throw MissingParameterException(optarg[y]);
-                           }
                         } else {
-                           _opt_specified(optarg[y]);
+                           // optarg is a free argument;
+                           parser_mode = PARSE_ARGUMENT;
+                           token.push_back(optarg[y]);
                         }
-                     }
-                     break;
+                        break;
 
-                  case PARSE_LONGOPT:
-                     token.push_back(optarg[y]);
-                     break;
+                     case PARSE_ARGUMENT:
+                        token.push_back(optarg[y]);
+                        break;
 
-                  default:
-                     throw ArgvException("Invalid argv parser state.");
+                     case PARSE_SHORTOPT:
+                        if (y == 1 && optarg[y] == '-') {
+                           // We're actually parsing a longopt.
+                           parser_mode = PARSE_LONGOPT;
+
+                        } else {
+                           Option opt = _get_opt(optarg[y]);
+                           if (opt.has_param) {
+                              if (y + 1 >= optarg.length() &&
+                                    x + 1 < argv.size()) {
+                                 _opt_specified(optarg[y], argv[++x]);
+
+                              } else {
+                                 throw MissingParameterException(optarg[y]);
+                              }
+                           } else {
+                              _opt_specified(optarg[y]);
+                           }
+                        }
+                        break;
+
+                     case PARSE_LONGOPT:
+                        token.push_back(optarg[y]);
+                        break;
+
+                     default:
+                        throw ArgvException("Invalid argv parser state.");
                   }
                }
 
@@ -327,8 +361,8 @@ namespace lain {
       protected:
          void _parse_shortopts(const string& shortopts_str) {
             for (auto iter = shortopts_str.begin();
-                 iter != shortopts_str.end();
-                 iter++) {
+                  iter != shortopts_str.end();
+                  iter++) {
                Option opt;
                string repr;
                auto next = iter + 1;
@@ -340,7 +374,13 @@ namespace lain {
                   opt.has_param = true;
                }
 
-               shortopts[*iter] = opt;
+               // Only add the option to the list if there isn't
+               // already one defined for this character,
+               // regardless of whether or not this new one
+               // specifies an option parameter.
+               if (shortopts.find(*iter) == shortopts.end()) {
+                  shortopts[*iter] = opt;
+               }
 
                if (opt.has_param)
                   iter++;
@@ -353,7 +393,7 @@ namespace lain {
                string repr;
 
                if (opt_str.length() > 2 &&
-                   opt_str.compare(opt_str.length() - 1, 1, "=") == 0) {
+                     opt_str.compare(opt_str.length() - 1, 1, "=") == 0) {
                   opt.has_param = true;
                   opt.repr = opt_str.substr(0, opt_str.length() - 2);
 
@@ -361,7 +401,13 @@ namespace lain {
                   opt.repr = opt_str;
                }
 
-               longopts[opt.repr] = opt;
+               // Only add the option to the list if there isn't
+               // already one defined for this word, regardless
+               // of whether or not this new one specifies an
+               // option parameter.
+               if (longopts.find(opt.repr) == longopts.end()) {
+                  longopts[opt.repr] = opt;
+               }
             }
          }
 
@@ -409,7 +455,7 @@ namespace lain {
             _opt_specified(opt_c);
             shortopts_values[opt_c].push_back(value);
          }
-         
+
          void _program_name_specified(const string& program_name) {
             this->program_name = program_name;
          }
