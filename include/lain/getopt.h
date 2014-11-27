@@ -1,7 +1,7 @@
 /*
  * getopt.hpp: Header-only Simplified Option Parser
  *
- * Author: Lain Lee Supe (lainproliant)
+ * Author: Lain Supe (lainproliant)
  * Date: Fri August 29, 2014
  */
 #ifndef __LAIN_GETOPT_H
