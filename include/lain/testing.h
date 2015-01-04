@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <functional>
 #include <vector>
+#include <cstdlib>
+#include <cstring>
+#include <csignal>
 
 #include "lain/exception.h"
 
@@ -58,6 +61,11 @@ namespace lain {
             return *this;
          }
 
+         TestSuite& die_on_signal(int signalId) {
+            signal(signalId, signal_callback);
+            return *this;
+         }
+
          int run(ostream& out = cout) const {
             int tests_failed = 0;
 
@@ -100,6 +108,13 @@ namespace lain {
          }
 
       private:
+         static void signal_callback(int signal) {
+            cerr << endl << "FATAL: Caught signal " << signal
+               << " (" << strsignal(signal) << ")"
+               << endl;
+            exit(1);
+         }
+
          vector<UnitTest> tests;
          string name;
       };
@@ -109,7 +124,7 @@ namespace lain {
             throw AssertionFailed(message);
          }
       }
-      
+
       template<class T>
       inline bool lists_equal(const T& listA, const T& listB) {
          return std::equal(listA.begin(), listA.end(), listB.begin());
