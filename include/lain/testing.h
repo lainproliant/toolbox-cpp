@@ -21,11 +21,17 @@
 namespace lain {
    namespace testing {
       using namespace std;
+      
+      class TestException : public Exception {
+      public:
+         TestException(const string& message) :
+            Exception(message) {}
+      };
 
-      class AssertionFailed : public Exception {
+      class AssertionFailed : public TestException {
       public:
          AssertionFailed(const string& message) :
-            Exception(message) {}
+            TestException(message) {}
       };
 
       class UnitTest {
@@ -91,7 +97,7 @@ namespace lain {
                   try {
                      std::rethrow_exception(eptr);
                   } catch (const std::exception& e) {
-                     out << "    FAILED: " << e.what() << endl;
+                     out << "    FAILED (" << typeid(e).name() << "): " << e.what() << endl;
                   }
 
                   tests_failed ++;
@@ -119,7 +125,7 @@ namespace lain {
          string name;
       };
 
-      inline void assert(bool expr, const string& message = "Assertion failed.") {
+      inline void assert_true(bool expr, const string& message = "Assertion failed.") {
          if (! expr) {
             throw AssertionFailed(message);
          }

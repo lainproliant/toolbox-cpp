@@ -14,10 +14,10 @@ int main(int argc, char** argv) {
             {"drink", {"coffee", "tea", "ice water"}}})
             .build();
 
-         assert(! lists_equal(mmap::collect(mmap, "fruit"),
+         assert_true(! lists_equal(mmap::collect(mmap, "fruit"),
                   {"apple", "banana", "pear"}));
 
-         assert(lists_equal(mmap::collect(mmap, "fruit"),
+         assert_true(lists_equal(mmap::collect(mmap, "fruit"),
                   {"apple", "orange", "banana", "pear"}));
       })
       .run();

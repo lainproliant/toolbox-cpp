@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
          ostream cnull(0);
          return TestSuite("internal test suite")
             .test("doomed test", []()->bool {
-               assert(false);
+               assert_true(false);
             })
             .run(cnull) == 1;
       })
