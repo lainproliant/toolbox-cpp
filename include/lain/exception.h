@@ -17,10 +17,10 @@ namespace lain {
 
       virtual const char* what() const throw()
       {
-         return getMessage().c_str();
+         return get_message().c_str();
       }
 
-      virtual const string& getMessage() const {
+      virtual const string& get_message() const {
          return message;
       }
 

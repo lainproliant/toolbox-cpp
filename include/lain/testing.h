@@ -21,7 +21,7 @@
 namespace lain {
    namespace testing {
       using namespace std;
-      
+
       class TestException : public Exception {
       public:
          TestException(const string& message) :
@@ -131,9 +131,26 @@ namespace lain {
          }
       }
 
+      inline void assert_false(bool expr, const string& message = "Negative assertion failed.") {
+         if (expr) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      template<class T>
+      inline size_t generic_list_size(const T& listA) {
+         size_t sz = 0;
+         for (auto iter = listA.begin(); iter != listA.end(); iter++) {
+            sz++;
+         }
+         return sz;
+      }
+
       template<class T>
       inline bool lists_equal(const T& listA, const T& listB) {
-         return std::equal(listA.begin(), listA.end(), listB.begin());
+
+         return generic_list_size(listA) == generic_list_size(listB) &&
+            equal(listA.begin(), listA.end(), listB.begin());
       }
    }
 }
