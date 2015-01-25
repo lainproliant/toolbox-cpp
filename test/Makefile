@@ -3,7 +3,7 @@ CXXFLAGS=-g --std=c++11 -DLAIN_OPTARG_DEBUG -I../include
 LDFLAGS=
 LDLIBS=
 
-all: unit-test
+all: unit-test clean
 
 unit-test: build-all-tests
 	./run-tests.py
