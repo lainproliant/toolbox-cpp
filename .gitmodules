@@ -4,6 +4,3 @@
 [submodule "include/tinyformat"]
 	path = include/tinyformat
 	url = https://github.com/c42f/tinyformat
-[submodule "include/spdlog"]
-	path = include/spdlog
-	url = https://github.com/gabime/spdlog
