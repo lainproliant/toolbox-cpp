@@ -15,6 +15,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <csignal>
+#include <cfloat>
+#include <cmath>
 
 #include "lain/exception.h"
 
@@ -133,6 +135,51 @@ namespace lain {
 
       inline void assert_false(bool expr, const string& message = "Negative assertion failed.") {
          if (expr) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      inline void epsilon_assert(double a, double b,
+            double epsilon = DBL_EPSILON,
+            const string& message = "Value equivalence assertion failed. (double epsilon)") {
+
+         if (abs(a - b) > epsilon) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      inline void epsilon_assert(float a, float b,
+            float epsilon = FLT_EPSILON,
+            const string& message = "Value equivalence assertion failed. (float epsilon)") {
+         if (fabs(a - b) > epsilon) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      template<class T>
+      inline void assert_equal(const T& a, const T& b,
+            const string& message = "Value equivalence assertion failed.") {
+         if (a != b) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      template<>
+      void assert_equal<double>(const double& a, const double& b, const string& message) {
+         try {
+            epsilon_assert(a, b);
+
+         } catch (const AssertionFailed& e) {
+            throw AssertionFailed(message);
+         }
+      }
+
+      template<>
+      void assert_equal<float>(const float& a, const float& b, const string& message) {
+         try {
+            epsilon_assert(a, b);
+
+         } catch (const AssertionFailed& e) {
             throw AssertionFailed(message);
          }
       }
