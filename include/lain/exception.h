@@ -1,5 +1,5 @@
-#ifndef __SIMPL_EXCEPTION_H
-#define __SIMPL_EXCEPTION_H
+#ifndef __LAIN_EXCEPTION_H
+#define __LAIN_EXCEPTION_H
 
 #ifdef LAIN_ENABLE_STACKTRACE
 #include <execinfo.h>

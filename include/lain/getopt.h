@@ -119,8 +119,8 @@ namespace lain {
           * any cached argument parsing which may have been performed.
           */
          OptionParser(const OptionParser& parser) {
-            this->shortopts = shortopts;
-            this->longopts = longopts;
+            shortopts = parser.shortopts;
+            longopts = parser.longopts;
          }
 
          /** Virtual destructor. */
