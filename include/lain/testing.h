@@ -165,7 +165,7 @@ namespace lain {
       }
 
       template<>
-      void assert_equal<double>(const double& a, const double& b, const string& message) {
+      inline void assert_equal<double>(const double& a, const double& b, const string& message) {
          try {
             epsilon_assert(a, b);
 
@@ -175,7 +175,7 @@ namespace lain {
       }
 
       template<>
-      void assert_equal<float>(const float& a, const float& b, const string& message) {
+      inline void assert_equal<float>(const float& a, const float& b, const string& message) {
          try {
             epsilon_assert(a, b);
 

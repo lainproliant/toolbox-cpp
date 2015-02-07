@@ -111,9 +111,8 @@ namespace lain {
 
          return vec;
       }
-      
 
-      string char_to_str(char c) {
+      inline string char_to_str(char c) {
          string str;
          str.push_back(c);
          return str;
