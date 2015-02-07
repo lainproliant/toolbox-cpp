@@ -30,8 +30,7 @@ namespace lain {
        */
       class ArgvException : public Exception {
       public:
-         ArgvException(const string& message) :
-            Exception(message) {}
+         using Exception::Exception;
       };
 
       class MissingParameterException : public ArgvException {

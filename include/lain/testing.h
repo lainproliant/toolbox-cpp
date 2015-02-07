@@ -26,14 +26,12 @@ namespace lain {
 
       class TestException : public Exception {
       public:
-         TestException(const string& message) :
-            Exception(message) {}
+         using Exception::Exception;
       };
 
       class AssertionFailed : public TestException {
       public:
-         AssertionFailed(const string& message) :
-            TestException(message) {}
+         using Exception::Exception;
       };
 
       class UnitTest {
