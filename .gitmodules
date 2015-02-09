@@ -13,3 +13,6 @@
 [submodule "include/spdlog"]
 	path = include/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "include/linked_map"]
+	path = include/linked_map
+	url = https://github.com/lainproliant/linked_map
