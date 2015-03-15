@@ -12,6 +12,7 @@
 #include <string>
 #include <iostream>
 
+#include "Optional/optional.hpp"
 #include "lain/exception.h"
 #include "lain/string.h"
 
@@ -19,6 +20,7 @@ namespace lain {
    namespace getopt {
       using namespace std;
       using namespace lain;
+      using namespace std::experimental;
 
       const string EMPTY_STRING = "";
       const list<string> EMPTY_STRING_LIST = {};
@@ -28,8 +30,7 @@ namespace lain {
        */
       class ArgvException : public Exception {
       public:
-         ArgvException(const string& message) :
-            Exception(message) {}
+         using Exception::Exception;
       };
 
       class MissingParameterException : public ArgvException {
@@ -109,9 +110,11 @@ namespace lain {
           *    parameters are not supported by this class.
           */
          OptionParser(const string& shortopts,
-               const vector<string>& longopts) {
+               const vector<string>& longopts,
+               bool strict = false) {
             _parse_shortopts(shortopts);
             _parse_longopts(longopts);
+            this->strict = strict;
          }
 
          /**
@@ -119,8 +122,8 @@ namespace lain {
           * any cached argument parsing which may have been performed.
           */
          OptionParser(const OptionParser& parser) {
-            this->shortopts = shortopts;
-            this->longopts = longopts;
+            shortopts = parser.shortopts;
+            longopts = parser.longopts;
          }
 
          /** Virtual destructor. */
@@ -313,17 +316,20 @@ namespace lain {
                            parser_mode = PARSE_LONGOPT;
 
                         } else {
-                           Option opt = _get_opt(optarg[y]);
-                           if (opt.has_param) {
-                              if (y + 1 >= optarg.length() &&
-                                    x + 1 < argv.size()) {
-                                 _opt_specified(optarg[y], argv[++x]);
+                           optional<const Option&> opt = _get_opt(optarg[y]);
+                           if (opt) {
+                              if (opt->has_param) {
+                                 if (y + 1 >= optarg.length() &&
+                                       x + 1 < argv.size()) {
+                                    _opt_specified(optarg[y], argv[++x]);
+
+                                 } else {
+                                    throw MissingParameterException(optarg[y]);
+                                 }
 
                               } else {
-                                 throw MissingParameterException(optarg[y]);
+                                 _opt_specified(optarg[y]);
                               }
-                           } else {
-                              _opt_specified(optarg[y]);
                            }
                         }
                         break;
@@ -338,16 +344,18 @@ namespace lain {
                }
 
                if (parser_mode == PARSE_LONGOPT) {
-                  Option opt = _get_opt(token);
-                  if (opt.has_param) {
-                     if (x + 1 < argv.size()) {
-                        _opt_specified(token, argv[++x]);
+                  optional<const Option&> opt = _get_opt(token);
+                  if (opt) {
+                     if (opt->has_param) {
+                        if (x + 1 < argv.size()) {
+                           _opt_specified(token, argv[++x]);
 
+                        } else {
+                           throw MissingParameterException(token);
+                        }
                      } else {
-                        throw MissingParameterException(token);
+                        _opt_specified(token);
                      }
-                  } else {
-                     _opt_specified(token);
                   }
 
                } else if (parser_mode == PARSE_ARGUMENT) {
@@ -418,24 +426,28 @@ namespace lain {
          bool _is_option_defined(const char& opt_c) const {
             return shortopts.find(opt_c) != shortopts.end();
          }
-
-         const Option& _get_opt(const string& opt_str) const {
+         
+         optional<const Option&> _get_opt(const string& opt_str) const {
             auto iter = longopts.find(opt_str);
             if (iter != longopts.end()) {
                return iter->second;
 
-            } else {
+            } else if (strict) {
                throw UndefinedOptionException(opt_str);
             }
+            
+            return nullopt;
          }
-
-         const Option& _get_opt(const char& opt_c) const {
+         
+         optional<const Option&> _get_opt(const char& opt_c) const {
             auto iter = shortopts.find(opt_c);
             if (iter != shortopts.end()) {
                return iter->second;
-            } else {
+            } else if (strict) {
                throw UndefinedOptionException(opt_c);
             }
+
+            return nullopt;
          }
 
          void _opt_specified(const string& opt_str) {
@@ -484,6 +496,8 @@ namespace lain {
          vector<string> args;
 
          string program_name;
+
+         bool strict;
       };
    }
 }

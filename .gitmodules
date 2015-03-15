@@ -4,3 +4,12 @@
 [submodule "include/tinyformat"]
 	path = include/tinyformat
 	url = https://github.com/c42f/tinyformat
+[submodule "include/apathy"]
+	path = include/apathy
+	url = https://github.com/dlecocq/apathy.git
+[submodule "include/Optional"]
+	path = include/Optional
+	url = https://github.com/akrzemi1/Optional
+[submodule "include/spdlog"]
+	path = include/spdlog
+	url = https://github.com/gabime/spdlog.git
