@@ -31,7 +31,7 @@ namespace lain {
 
       class AssertionFailed : public TestException {
       public:
-         using Exception::Exception;
+         using TestException::TestException;
       };
 
       class UnitTest {
