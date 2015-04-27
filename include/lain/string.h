@@ -129,14 +129,13 @@ namespace lain {
        * already specified, e.g. for primitives and std::string.
        */
       template <class T, class V = typename T::value_type>
-      string repr(const T& coll) {
+      string list_repr(const T& coll) {
          ostringstream sb;
 
          sb << "[";
          auto iter = coll.begin();
          while (iter != coll.end()) {
-            const V& value = *iter;
-            sb << value;
+            sb << *iter;
             iter++;
             if (iter != coll.end())
                sb << ", ";
@@ -158,7 +157,7 @@ namespace lain {
        */
       template <class M, class K = typename M::key_type,
                 class V = typename M::mapped_type>
-      string repr(M& map, bool pretty = false) {
+      string map_repr(M& map, bool pretty = false) {
          ostringstream sb;
 
          sb << "{";

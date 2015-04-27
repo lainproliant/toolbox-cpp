@@ -155,7 +155,7 @@ namespace lain {
          }
 
          /**
-          * Determine if an option was provided.
+          * Determine if a longopt was provided.
           *
           * @param opt The option to check for.
           * @return True if the option was provided, false otherwise.
@@ -165,7 +165,28 @@ namespace lain {
          }
 
          /**
-          * Determine the number of times the given option was specified.
+          * Determine if a shortopt was provided.
+          *
+          * @param opt The option to check.
+          * @return True if the option was provided, false otherwise.
+          */
+         bool check_option(const char& opt_c) const {
+            return shortopts_specified.find(opt_c) != shortopts_specified.end();
+         }
+
+         /**
+          * Determine if the given longopt or shortopt were specified.
+          *
+          * @param opt The longopt version of the option to check.
+          * @param opt_c The shortopt version of the option to check.
+          * @return True if the option was provided, false otherwise.
+          */
+         bool check_option(const string& opt, const char& opt_c) const {
+            return check_option(opt) || check_option(opt_c);
+         }
+
+         /**
+          * Determine the number of times the given longopt was specified.
           *
           * @param opt The option to check.
           * @return The number of times the option was provided, or 0
@@ -180,6 +201,13 @@ namespace lain {
             }
          }
 
+         /**
+          * Determine the number of times the given shortopt was specified.
+          *
+          * @param opt_c The option to check.
+          * @return The number of times the option was provided, or 0
+          *    if the option was not provided or is not defined.
+          */
          int get_count(const char& opt_c) const {
             auto iter = shortopts_specified.find(opt_c);
             if (iter != shortopts_specified.end()) {
@@ -189,6 +217,23 @@ namespace lain {
             }
          }
 
+         /**
+          * Determine the number of times the given longopt and shortopt
+          * were specified.
+          *
+          * @param opt The longopt version of the option to check.
+          * @param opt_c The shortopt version of the option to check.
+          * @return The number of times the option was provided, or 0
+          *    if the option was not provided or is not defined.
+          */
+         int get_count(const string& opt, const char& opt_c) const {
+            return get_count(opt) + get_count(opt_c);
+         }
+
+         /**
+          * Return the program name as reported by the shell, this ends
+          * up being argv[0] from the main() function.
+          */
          const string& get_program_name() const {
             return program_name;
          }
@@ -218,14 +263,43 @@ namespace lain {
           *    not accept a parameter.
           */
          template <class T>
-            const string& get_param(const T& opt_token) const {
-               const list<string>& params = get_param_list(opt_token);
-               if (params.size() > 0) {
-                  return params.front();
-               } else {
-                  return EMPTY_STRING;
-               }
+         const string& get_param(const T& opt_token) const {
+            const list<string>& params = get_param_list(opt_token);
+            if (params.size() > 0) {
+               return params.front();
+            } else {
+               return EMPTY_STRING;
             }
+         }
+
+         /**
+          * Fetch the parameter for the given long or shortopt provided.
+          * Only one parameter per option is recorded, that being the last
+          * one provided.  If a parameter is provided for the longopt and
+          * the shortopt, the longopt parameter is preferred.
+          *
+          * If the option wasn't provided or doesn't accept parameters, an
+          * empty string will be returned. Users should first call
+          * check_option() to determine if the option was specified before
+          * calling this function for reliable results.
+          *
+          * @param opt The longopt version of the option for which to fetch
+          *    the parameter.
+          * @param opt_c The shortopt version of the option for which to
+          *    fetch the parameter.
+          * @return The parameter provided for the option, or an empty string
+          *    if the parameter is not defined, was not provided, or does
+          *    not accept a parameter.
+          */
+         string get_param(const string& opt, const char& opt_c) const {
+            string param = get_param(opt);
+
+            if (param == EMPTY_STRING) {
+               param = get_param(opt_c);
+            }
+
+            return param;
+         }
 
          /**
           * Fetch the list of parameters which were specified for
@@ -259,6 +333,29 @@ namespace lain {
             } else {
                return EMPTY_STRING_LIST;
             }
+         }
+
+         /**
+          * Fetch the list of parameters which were specified for
+          * the given longopt or shortopt.  Parameters specified for
+          * the longopt and shortopt are combined, with longopt params
+          * occurring before shortopt params in the result list.
+          *
+          * @param opt_c The shortopt which was parameterized.
+          * @return A list of strings, or an empty list if the
+          *    shortopt was not specified.
+          */
+         list<string> get_param_list(const string& opt, const char& opt_c) const {
+            list<string> result_list;
+            const list<string>& longopt_list = get_param_list(opt);
+            const list<string>& shortopt_list = get_param_list(opt_c);
+            
+            result_list.insert(result_list.end(), longopt_list.begin(),
+                               longopt_list.end());
+            result_list.insert(result_list.end(), shortopt_list.begin(),
+                               shortopt_list.end());
+
+            return result_list;
          }
 
          /**
@@ -403,7 +500,7 @@ namespace lain {
                if (opt_str.length() > 2 &&
                      opt_str.compare(opt_str.length() - 1, 1, "=") == 0) {
                   opt.has_param = true;
-                  opt.repr = opt_str.substr(0, opt_str.length() - 2);
+                  opt.repr = opt_str.substr(0, opt_str.length() - 1);
 
                } else {
                   opt.repr = opt_str;
@@ -426,7 +523,7 @@ namespace lain {
          bool _is_option_defined(const char& opt_c) const {
             return shortopts.find(opt_c) != shortopts.end();
          }
-         
+
          optional<const Option&> _get_opt(const string& opt_str) const {
             auto iter = longopts.find(opt_str);
             if (iter != longopts.end()) {
@@ -435,10 +532,10 @@ namespace lain {
             } else if (strict) {
                throw UndefinedOptionException(opt_str);
             }
-            
+
             return nullopt;
          }
-         
+
          optional<const Option&> _get_opt(const char& opt_c) const {
             auto iter = shortopts.find(opt_c);
             if (iter != shortopts.end()) {
