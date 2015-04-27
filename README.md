@@ -3,19 +3,28 @@ Lain's Personal C++ Toolbox
 
 A header-only meta library with tools to make C++ life more fun.
 
+All of the tools in this library require C++11, some require C++14.
+
 Included among these are the following sets of tools:
 
 + Custom Tools
   + `<lain/exception.h>`: A sensible Exception base class.
   + `<lain/getopt.h>`: A really basic simplified command line option parser.
-  + `<lain/string.h>`: Some useful functions built around strings and standard library containers.  Some highlights:
-    + `str::join`: Join the elements of an iterable into a string with the given delimiter.
-    + `str::split`: Split the elements of a string into a list of strings using the given delimiter.
-    + `str::repr`: Print structural representations of maps and lists, useful for debugging.
+    + Requires C++14
+  + `<lain/mmap.h>`: Syntactic static initialization of multimaps.
+  + `<lain/settings.h>`: A wrapper around picojson providing an easy to use JSON config file interface.
+  + `<lain/string.h>`: Some useful functions built around strings and standard library containers.
+  + `<lain/testing.h>`: A minimalistic C++11 functional unit testing framework used by this library.
 
 + Submodules
+  + **apathy**: C++ path manipulation.
+    + https://github.com/dlecocq/apathy.git
+  + **Optional**: Optional/nullable objects for C++14
+	 + https://github.com/akrzemi1/Optional
   + **picojson**: a C++ JSON parser / serializer by Kazuho Oku
     + https://travis-ci.org/kazuho/picojson
+  + **spdlog**: Super fast C++ logging library with multithreading support.
+	 + https://github.com/gabime/spdlog.git
   + **tinyformat**: A minimal type safe printf() replacement by Chris Foster
     + https://github.com/c42f/tinyformat
 
@@ -26,3 +35,4 @@ Some of the directories under `include` are Git submodules.  When you clone this
 
 For more information on Git submodules, see
 http://git-scm.com/book/en/Git-Tools-Submodules
+
