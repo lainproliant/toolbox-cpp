@@ -7,6 +7,7 @@
 
 #include <exception>
 #include <stdexcept>
+#include <sstream>
 #include <vector>
 #include <ostream>
 
@@ -65,10 +66,18 @@ namespace lain {
          return message;
       }
 
-      void print_stacktrace(ostream& out) const {
+      string format_stacktrace() const {
+         ostringstream sb;
+
          for (size_t x = 0; x < stacktrace.size(); x++) {
-            out << x << ": " << stacktrace[x] << endl;
+            sb << x << ": " << stacktrace[x] << endl;
          }
+
+         return sb.str();
+      }
+
+      void print_stacktrace(ostream& out) const {
+         out << format_stacktrace();
       }
 
       const vector<string>& get_stacktrace() const {
