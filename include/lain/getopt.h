@@ -273,6 +273,25 @@ namespace lain {
          }
 
          /**
+          * Fetch the parameter for the option provided.  Only one parameter
+          * per option is recorded, that being the last one provided.
+          *
+          * @param opt The option for which to fetch the parameter.
+          * @return The parameter provided for the option.
+          * @throws MissingParameterException if the option wasn't provided
+          *    or doesn't accept parameters.
+          */
+         template <class T>
+         const string& get_required_param(const T& opt_token) const {
+            const string& param = get_param(opt_token);
+            if (param == EMPTY_STRING) {
+               throw MissingParameterException(opt_token);
+            }
+
+            return param;
+         }
+
+         /**
           * Fetch the parameter for the given long or shortopt provided.
           * Only one parameter per option is recorded, that being the last
           * one provided.  If a parameter is provided for the longopt and
@@ -292,10 +311,38 @@ namespace lain {
           *    not accept a parameter.
           */
          string get_param(const string& opt, const char& opt_c) const {
+            if (check_option(opt)) {
+               return get_param(opt);
+            } else {
+               return get_param(opt_c);
+            }
+         }
+
+         /**
+          * Fetch the parameter for the given long or shortopt provided.
+          * Only one parameter per option is recorded, that being the last
+          * one provided.  If a parameter is provided for the longopt and
+          * the shortopt, the longopt parameter is preferred.
+          *
+          * @param opt The longopt version of the option for which to fetch
+          *    the parameter.
+          * @param opt_c The shortopt version of the option for which to
+          *    fetch the parameter.
+          * @return The parameter provided for the option, or an empty string
+          *    if the parameter is not defined, was not provided, or does
+          *    not accept a parameter.
+          * @throws MissingParameterException if the option wasn't provided
+          *    or doesn't accept parameters.
+          */
+         string get_required_param(const string& opt, const char& opt_c) const {
             string param = get_param(opt);
 
             if (param == EMPTY_STRING) {
                param = get_param(opt_c);
+            }
+
+            if (param == EMPTY_STRING) {
+               throw MissingParameterException(opt + "/-" + opt_c);
             }
 
             return param;
@@ -349,7 +396,7 @@ namespace lain {
             list<string> result_list;
             const list<string>& longopt_list = get_param_list(opt);
             const list<string>& shortopt_list = get_param_list(opt_c);
-            
+
             result_list.insert(result_list.end(), longopt_list.begin(),
                                longopt_list.end());
             result_list.insert(result_list.end(), shortopt_list.begin(),
