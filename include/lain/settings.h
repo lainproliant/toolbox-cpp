@@ -174,7 +174,7 @@ namespace lain {
 
          if (! obj_value->is<pj::object>()) {
             throw SettingsException(
-               "JSON file does not contain an object.");
+               tfm::format("JSON file does not contain an object: '%s'", filename));
          }
 
          return Settings(obj_value);
