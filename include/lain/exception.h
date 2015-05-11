@@ -51,7 +51,7 @@ namespace lain {
          stacktrace = generate_stacktrace();
 #ifdef LAIN_STACKTRACE_IN_DESCRIPTION
          this->message = tfm::format("%s\n%s\n",
-            message, format_stacktrace(stacktrace));
+            message, format_stacktrace());
 #else
          this->message = message;
 #endif
