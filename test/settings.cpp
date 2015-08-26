@@ -97,5 +97,11 @@ int main() {
 
          return false;
       })
+      .test("Settings-007: Creation of settings objects with float values", [&]()->bool {
+         Settings settings;
+         settings.set<float>("pi", 3.14159);
+         cout << settings.to_string() << endl;
+         return true;
+      })
       .run();
 }

@@ -215,7 +215,7 @@ namespace lain {
 
       template <class T>
       void set(const string& name, const T& value) {
-         settings_impl::set_value<T>(*const_pointer_cast<const pj::value>(obj_value), name, value);
+         settings_impl::set_value<T>(*obj_value, name, value);
       }
 
       template <class T>
