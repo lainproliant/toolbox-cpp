@@ -15,4 +15,5 @@ build-all-tests: $(patsubst %.cpp, %.test, $(wildcard *.cpp))
 
 clean:
 	rm -f *.test
+	rm -f *.output
 
