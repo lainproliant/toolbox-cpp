@@ -22,7 +22,7 @@ namespace lain {
    using namespace std;
    namespace pj = picojson;
 
-   class JSONException : public Exception {
+   class SettingsException : public Exception {
    public:
       using Exception::Exception;
    };
@@ -38,13 +38,13 @@ namespace lain {
       template <class T>
       T get_value(const pj::value& obj_value, const string& name) {
          if (! obj_value.contains(name)) {
-            throw JSONException(tfm::format(
+            throw SettingsException(tfm::format(
                "Missing value for key '%s'.", name));
          }
 
          pj::value value = obj_value.get(name);
          if (! value.is<T>()) {
-            throw JSONException(tfm::format(
+            throw SettingsException(tfm::format(
                "Unexpected value type for key '%s'.", name));
          }
 
@@ -58,7 +58,7 @@ namespace lain {
          try {
             return get_value<T>(obj_value, name);
 
-         } catch (const JSONException& e) {
+         } catch (const SettingsException& e) {
             return default_value;
          }
       }
@@ -68,7 +68,7 @@ namespace lain {
          try {
             return get_value<T>(obj_value, name);
 
-         } catch (const JSONException& e) {
+         } catch (const SettingsException& e) {
             set_value(obj_value, name, default_value);
             return default_value;
          }
@@ -91,19 +91,19 @@ namespace lain {
          vector<T> vec;
 
          if (! obj_value.contains(name)) {
-            throw JSONException(tfm::format(
+            throw SettingsException(tfm::format(
                "Missing array for key '%s'.", name));
          }
 
          const pj::value& array_value = obj_value.get(name);
          if (! array_value.is<pj::array>()) {
-            throw JSONException(tfm::format("Key '%s' does not refer to an array.", name));
+            throw SettingsException(tfm::format("Key '%s' does not refer to an array.", name));
          }
 
          const pj::array& array = array_value.get<pj::array>();
          for (pj::value val : array) {
             if (! val.is<T>()) {
-               throw JSONException(tfm::format(
+               throw SettingsException(tfm::format(
                   "Unexpected heterogenous value type in array for key '%s'.", name));
             }
 
@@ -118,7 +118,7 @@ namespace lain {
          try {
             return get_array<T>(obj_value, name);
 
-         } catch (const JSONException& e) {
+         } catch (const SettingsException& e) {
             cerr << e.get_message() << endl;
             set_array(name, default_array);
             return default_array;
@@ -156,7 +156,7 @@ namespace lain {
          try {
             return get_array<int>(obj_value, name);
 
-         } catch (const JSONException& e) {
+         } catch (const SettingsException& e) {
             set_array(obj_value, name, default_vec);
             return default_vec;
          }
@@ -170,28 +170,28 @@ namespace lain {
     * contain only objects, ints, floats, strings, etc. and may not mix these
     * data types.  This allows us to fetch lists directly into C++ data types.
     * Attempting to load data that does not fit this limitation will result in
-    * JSONException being thrown.
+    * SettingsException being thrown.
     */
-   class JSON {
+   class Settings {
    public:
-      JSON() : obj_value(make_shared<pj::value>(pj::object())) { }
-      JSON(const shared_ptr<pj::value>& obj_value) :
+      Settings() : obj_value(make_shared<pj::value>(pj::object())) { }
+      Settings(const shared_ptr<pj::value>& obj_value) :
          obj_value(obj_value) { }
 
-      virtual ~JSON() { }
+      virtual ~Settings() { }
 
-      static JSON load_from_file(const string& filename) {
+      static Settings load_from_file(const string& filename) {
          ifstream infile;
          shared_ptr<pj::value> obj_value = make_shared<pj::value>();
          infile.open(filename);
          infile >> (*obj_value);
 
          if (! obj_value->is<pj::object>()) {
-            throw JSONException(
-               tfm::format("JSON file does not contain an object: '%s'", filename));
+            throw SettingsException(
+               tfm::format("Settings file does not contain an object: '%s'", filename));
          }
 
-         return JSON(obj_value);
+         return Settings(obj_value);
       }
 
       void save_to_file(const string& filename, bool prettify = false) const {
@@ -247,57 +247,57 @@ namespace lain {
          json_impl::set_array<T>(*obj_value, name, vec);
       }
 
-      vector<JSON> get_object_array(const string& name) const {
+      vector<Settings> get_object_array(const string& name) const {
          pj::value obj_values_array_value = obj_value->get(name);
 
          if (! obj_values_array_value.is<pj::array>()) {
-            throw JSONException(tfm::format("Key '%s' does not refer to an object array.", name));
+            throw SettingsException(tfm::format("Key '%s' does not refer to an object array.", name));
          }
 
          pj::array& obj_values_array = obj_values_array_value.get<pj::array>();
-         vector<JSON> obj_array;
+         vector<Settings> obj_array;
 
          for (pj::value val : obj_values_array) {
             if (! val.is<pj::object>()) {
-               throw JSONException(tfm::format("Object array contains non-object: '%s'", name));
+               throw SettingsException(tfm::format("Object array contains non-object: '%s'", name));
             }
 
-            obj_array.push_back(JSON(make_shared<pj::value>(val)));
+            obj_array.push_back(Settings(make_shared<pj::value>(val)));
          }
 
          return obj_array;
       }
 
-      void set_object_array(const string& name, const vector<JSON>& obj_list) {
+      void set_object_array(const string& name, const vector<Settings>& obj_list) {
          pj::array array;
          pj::object& obj = obj_value->get<pj::object>();
 
-         for (JSON obj : obj_list) {
+         for (Settings obj : obj_list) {
             array.push_back(*(obj.obj_value.get()));
          }
 
          obj[name] = pj::value(array);
       }
 
-      JSON get_object(const string& name, bool must_exist = false) const {
+      Settings get_object(const string& name, bool must_exist = false) const {
          if (! obj_value->contains(name)) {
             if (must_exist) {
-               throw JSONException(tfm::format("Missing object for key '%s'.", name));
+               throw SettingsException(tfm::format("Missing object for key '%s'.", name));
 
             } else {
-               return JSON();
+               return Settings();
             }
          }
 
          pj::value object_json = obj_value->get(name);
          if (! object_json.is<pj::object>()) {
-            throw JSONException(tfm::format("Key '%s' does not refer to a object.", name));
+            throw SettingsException(tfm::format("Key '%s' does not refer to a object.", name));
          }
 
-         return JSON(make_shared<pj::value>(object_json));
+         return Settings(make_shared<pj::value>(object_json));
       }
 
-      void set_object(const string& name, const JSON& object) {
+      void set_object(const string& name, const Settings& object) {
          pj::object& obj = obj_value->get<pj::object>();
          obj[name] = (*object.obj_value);
       }
@@ -308,12 +308,12 @@ namespace lain {
 
    namespace json_impl {
       template <>
-      inline vector<JSON> get_array<JSON>(const pj::value& obj_value, const string& name) {
+      inline vector<Settings> get_array<Settings>(const pj::value& obj_value, const string& name) {
          vector<pj::object> obj_array = get_array<pj::object>(obj_value, name);
-         vector<JSON> json_vec(obj_array.size());
+         vector<Settings> json_vec(obj_array.size());
 
          for (auto obj : obj_array) {
-            json_vec.push_back(JSON(make_shared<pj::value>(obj)));
+            json_vec.push_back(Settings(make_shared<pj::value>(obj)));
          }
 
          return json_vec;
