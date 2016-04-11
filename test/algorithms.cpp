@@ -14,7 +14,7 @@ namespace tfm = tinyformat;
 int main() {
    return TestSuite("Algorithms (algorithms.h) tests")
       .die_on_signal(SIGSEGV)
-      .test("Test lain::filter", [&]()->bool {
+      .test("Test lain::filter", [&]() {
          list<int> first = {1, 2, 3, 4, 5, 6};
          vector<int> second;
 
@@ -28,12 +28,20 @@ int main() {
          assert_true(lists_equal(second, {2, 4, 6}));
          return true;
       })
-      .test("Test lain::filter implicit form", [&]()->bool {
+      .test("Test lain::filter implicit form", [&]() {
          list<int> first = {1, 2, 3, 4, 5, 6};
 
          assert_true(lists_equal(filter(first, [&](int x) {
             return !(x % 2);
          }), {2, 4, 6}));
+
+         return true;
+      })
+      .test("Test lain::sum", [&]() {
+         vector<int> vec = {1, 2, 3};
+         assert_equal(lain::sum(vec, 0), 6);
+
+         return true;
       })
       .run();
 }

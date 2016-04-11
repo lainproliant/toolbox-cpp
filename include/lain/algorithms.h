@@ -18,6 +18,11 @@ namespace lain {
       copy_if(src.begin(), src.end(), back_inserter(result), f);
       return result;
    }
+
+   template<class C1>
+   typename C1::value_type sum(const C1& src, const typename C1::value_type& init) {
+      return accumulate(src.begin(), src.end(), init);
+   }
 }
   
 #endif
