@@ -13,3 +13,6 @@
 [submodule "include/spdlog"]
 	path = include/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "include/Streams"]
+	path = include/Streams
+	url = https://github.com/jscheiny/Streams
