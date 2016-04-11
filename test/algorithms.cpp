@@ -14,11 +14,11 @@ namespace tfm = tinyformat;
 int main() {
    return TestSuite("Algorithms (algorithms.h) tests")
       .die_on_signal(SIGSEGV)
-      .test("Test lain::filter", [&]() {
+      .test("Test alg::filter", [&]() {
          list<int> first = {1, 2, 3, 4, 5, 6};
          vector<int> second;
 
-         filter(first, second, [&](int x) {
+         alg::filter(first, second, [&](int x) {
             return !(x % 2); 
          });
 
@@ -28,18 +28,26 @@ int main() {
          assert_true(lists_equal(second, {2, 4, 6}));
          return true;
       })
-      .test("Test lain::filter implicit form", [&]() {
+      .test("Test alg::filter implicit form", [&]() {
          list<int> first = {1, 2, 3, 4, 5, 6};
 
-         assert_true(lists_equal(filter(first, [&](int x) {
+         assert_true(lists_equal(alg::filter(first, [&](int x) {
             return !(x % 2);
          }), {2, 4, 6}));
 
          return true;
       })
-      .test("Test lain::sum", [&]() {
+      .test("Test alg::sum", [&]() {
          vector<int> vec = {1, 2, 3};
-         assert_equal(lain::sum(vec, 0), 6);
+         assert_equal(alg::sum(vec, 0), 6);
+
+         return true;
+      })
+      .test("Test alg::map", [&]() {
+         vector<int> vec = {1, 2, 3};
+
+         assert_true(lists_equal({2, 4, 6},
+            alg::map<vector<int>>(vec, [&](auto& x) { return x * 2; })));
 
          return true;
       })
