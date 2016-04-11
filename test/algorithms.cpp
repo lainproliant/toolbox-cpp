@@ -18,7 +18,7 @@ int main() {
          list<int> first = {1, 2, 3, 4, 5, 6};
          vector<int> second;
 
-         filter(first, second, [&](int x)->bool {
+         filter(first, second, [&](int x) {
             return !(x % 2); 
          });
 
@@ -27,6 +27,13 @@ int main() {
 
          assert_true(lists_equal(second, {2, 4, 6}));
          return true;
+      })
+      .test("Test lain::filter implicit form", [&]()->bool {
+         list<int> first = {1, 2, 3, 4, 5, 6};
+
+         assert_true(lists_equal(filter(first, [&](int x) {
+            return !(x % 2);
+         }), {2, 4, 6}));
       })
       .run();
 }

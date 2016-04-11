@@ -11,6 +11,13 @@ namespace lain {
    void filter(const C1& src, C2& dest, function<bool(typename C1::value_type)> f) {
       copy_if(src.begin(), src.end(), back_inserter(dest), f); 
    }
-}
 
+   template<class C1>
+   C1 filter(const C1& src, function<bool(typename C1::value_type)> f) {
+      C1 result;
+      copy_if(src.begin(), src.end(), back_inserter(result), f);
+      return result;
+   }
+}
+  
 #endif
