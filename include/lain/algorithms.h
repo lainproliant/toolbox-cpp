@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <numeric>
 
 namespace lain {
    namespace alg {
@@ -32,7 +33,7 @@ namespace lain {
 
       template<class C1>
       typename C1::value_type sum(const C1& src, const typename C1::value_type& init) {
-         return accumulate(src.begin(), src.end(), init);
+         return std::accumulate(src.begin(), src.end(), init);
       }
    }
 }
