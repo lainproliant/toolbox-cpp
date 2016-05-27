@@ -8,9 +8,11 @@ All of the tools in this library require C++11, some require C++14.
 Included among these are the following sets of tools:
 
 + Custom Tools
+  + `<lain/algorithms.h>`: Convenient wrappers around STL algorithms for functional transformation of containers.
   + `<lain/exception.h>`: A sensible Exception base class.
   + `<lain/getopt.h>`: A really basic simplified command line option parser.
     + Requires C++14
+  + `<lain/maps.h>`: Convenience functions for STL map types.
   + `<lain/mmap.h>`: Syntactic static initialization of multimaps.
   + `<lain/settings.h>`: A wrapper around picojson providing an easy to use JSON config file interface.
   + `<lain/string.h>`: Some useful functions built around strings and standard library containers.
