@@ -1,5 +1,5 @@
 /*
- * json: Simplified wrapper classes around picojson.
+ * Settings: A simplified wrapper class around picojson.
  *
  * Motivation: By not supporting hetergenous lists or
  * standalone non-object values, we can greatly simplify
@@ -14,6 +14,7 @@
 #include <fstream>
 #include <memory>
 
+#include "lain/maps.h"
 #include "lain/exception.h"
 #include "tinyformat/tinyformat.h"
 #include "picojson/picojson.h"
@@ -162,7 +163,7 @@ namespace lain {
          }
       }
    }
-   
+
    /**
     * A wrapper class around picojson with a simplified, object-focused interface.
     *
@@ -210,6 +211,10 @@ namespace lain {
 
       bool contains(const string& name) const {
          return obj_value->contains(name);
+      }
+
+      vector<string> get_keys() const {
+         return lain::maps::keys(obj_value->get<pj::object>());
       }
 
       template <class T>

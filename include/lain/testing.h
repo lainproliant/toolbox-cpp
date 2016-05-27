@@ -19,6 +19,7 @@
 #include <cmath>
 
 #include "lain/exception.h"
+#include "tinyformat/tinyformat.h"
 
 namespace lain {
    namespace testing {
@@ -98,6 +99,9 @@ namespace lain {
                      std::rethrow_exception(eptr);
                   } catch (const std::exception& e) {
                      out << "    FAILED (" << typeid(e).name() << "): " << e.what() << endl;
+#ifdef LAIN_ENABLE_STACKTRACE
+                     out << tfm::format("%s\n", format_stacktrace(generate_stacktrace()));
+#endif
                   }
 
                   tests_failed ++;
@@ -118,6 +122,10 @@ namespace lain {
             cerr << endl << "FATAL: Caught signal " << signal
                << " (" << strsignal(signal) << ")"
                << endl;
+
+#ifdef LAIN_ENABLE_STACKTRACE
+            cerr << tfm::format("%s\n", format_stacktrace(generate_stacktrace()));
+#endif
             exit(1);
          }
 

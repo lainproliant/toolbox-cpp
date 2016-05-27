@@ -19,7 +19,7 @@ int main() {
          vector<int> second;
 
          alg::filter(first, second, [&](int x) {
-            return !(x % 2); 
+            return !(x % 2);
          });
 
          tfm::printf("first = [%s]\n", str::join(first, ", "));
@@ -48,6 +48,18 @@ int main() {
 
          assert_true(lists_equal({2, 4, 6},
             alg::map<vector<int>>(vec, [&](auto& x) { return x * 2; })));
+
+         return true;
+      })
+      .test("Test alg::sorted without custom sorter", [&]() {
+         vector<int> vec = {8, 6, 7, 5, 3, 0, 9};
+         vector<int> sorted = alg::sorted(vec);
+
+         tfm::printf("vec = [%s]\n", str::join(vec, ", "));
+         tfm::printf("sorted = [%s]\n", str::join(sorted, ", "));
+
+         assert_true(lists_equal(vec, {8, 6, 7, 5, 3, 0, 9}));
+         assert_true(lists_equal(sorted, {0, 3, 5, 6, 7, 8, 9}));
 
          return true;
       })
