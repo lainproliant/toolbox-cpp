@@ -16,7 +16,7 @@ namespace lain {
 
       template<class C1, class C2>
       void extend(C1& dest, const C2& src) {
-         std::copy(src.begin, src.end(), std::back_inserter(dest));
+         std::copy(src.begin(), src.end(), std::back_inserter(dest));
       }
 
       template<class C1>
