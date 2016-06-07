@@ -16,3 +16,6 @@
 [submodule "include/Streams"]
 	path = include/Streams
 	url = https://github.com/jscheiny/Streams
+[submodule "include/FunctionalPlus"]
+	path = include/FunctionalPlus
+	url = https://github.com/Dobiasd/FunctionalPlus
