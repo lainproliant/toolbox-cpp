@@ -21,12 +21,18 @@ Included among these are the following sets of tools:
 + Submodules
   + **apathy**: C++ path manipulation.
     + https://github.com/dlecocq/apathy.git
-  + **Optional**: Optional/nullable objects for C++14
-	 + https://github.com/akrzemi1/Optional
+  + **date**: Howard Hinnant's date and time library based on the C++11 (and beyond) `<chrono>` header.
+    + https://github.com/HowardHinnant/date
+  + **FunctionalPlus**: Functional tools for C++ containers.
+    + https://github.com/Dobiasd/FunctionalPlus
   + **picojson**: a C++ JSON parser / serializer by Kazuho Oku
     + https://travis-ci.org/kazuho/picojson
+  + **Optional**: Optional/nullable objects for C++14
+	 + https://github.com/akrzemi1/Optional
   + **spdlog**: Super fast C++ logging library with multithreading support.
 	 + https://github.com/gabime/spdlog.git
+  + **Streams**: Lazy evaluation and functional style transformations (similar to Java 8 Streams)
+    + http://jscheiny.github.io/Streams/
   + **tinyformat**: A minimal type safe printf() replacement by Chris Foster
     + https://github.com/c42f/tinyformat
 

@@ -19,3 +19,6 @@
 [submodule "include/FunctionalPlus"]
 	path = include/FunctionalPlus
 	url = https://github.com/Dobiasd/FunctionalPlus
+[submodule "include/date"]
+	path = include/date
+	url = https://github.com/HowardHinnant/date
