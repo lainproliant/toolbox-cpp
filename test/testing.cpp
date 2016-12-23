@@ -1,5 +1,4 @@
 #include <iostream>
-#include "lain/getopt.h"
 #include "lain/testing.h"
 
 using namespace std;

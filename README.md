@@ -11,8 +11,6 @@ Included among these are the following sets of tools:
   + `<lain/algorithms.h>`: Convenient wrappers around STL algorithms for functional transformation of containers.
   + `<lain/ansi.h>`: Provides string constants and functions for ANSI terminal escape sequences and term info.
   + `<lain/exception.h>`: A sensible Exception base class.
-  + `<lain/getopt.h>`: A really basic simplified command line option parser.
-    + Requires C++14
   + `<lain/maps.h>`: Convenience functions for STL map types.
   + `<lain/mmap.h>`: Syntactic static initialization of multimaps.
   + `<lain/settings.h>`: A wrapper around picojson providing an easy to use JSON config file interface.
