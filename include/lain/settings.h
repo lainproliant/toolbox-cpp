@@ -307,6 +307,11 @@ namespace lain {
          obj[name] = (*object.obj_value);
       }
 
+      friend ostream& operator<<(ostream& out, const Settings& settings) {
+         out << settings.to_string();
+         return out;
+      }
+
    private:
       shared_ptr<pj::value> obj_value;
    };
