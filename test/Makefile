@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-g --std=c++14 -DLAIN_OPTARG_DEBUG -I../include
+CXXFLAGS=-g -O0 -fno-inline-functions -fno-inline-small-functions --std=c++14 -DLAIN_OPTARG_DEBUG -I../include
 LDFLAGS=
 LDLIBS=
 

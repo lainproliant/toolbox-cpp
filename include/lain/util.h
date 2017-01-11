@@ -8,10 +8,17 @@
 namespace lain {
    using namespace std;
 
-   class ValueException : public Exception {
-      using Exception::Exception;
+   class Finalizer {
+   public:
+      Finalizer(function<void()> closure) : closure(closure) { }
+      virtual ~Finalizer() {
+         closure();
+      }
+
+   private:
+      function<void()> closure;
    };
-   
+
    namespace util {
       inline void assertTrue(bool expr, const string& message) {
          if (! expr) {

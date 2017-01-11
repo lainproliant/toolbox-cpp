@@ -88,6 +88,14 @@ namespace lain {
       string message;
       vector<string> stacktrace;
    };
+
+   class ValueException : public Exception {
+      using Exception::Exception;
+   };
+
+   class IndexException : public Exception {
+      using Exception::Exception;
+   };
 }
 
 #endif
