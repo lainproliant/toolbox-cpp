@@ -8,7 +8,7 @@
 
 namespace lain {
    using namespace std;
-   
+
    /**
     * A wrapper template class for a plain vector providing
     * 2d access semantics and preallocation of a static sized
@@ -35,7 +35,7 @@ namespace lain {
       }
 
       virtual ~Matrix() { }
-   
+
       /**
        * Get a mutable reference to the element at (x, y).
        */
@@ -43,7 +43,7 @@ namespace lain {
          assert(y * _width + x < size());
          return vec[y * _width + x];
       }
-      
+
       /**
        * Get a const reference to the element at (x, y).
        */
@@ -61,7 +61,7 @@ namespace lain {
             }
          }
       }
-      
+
       /**
        * Resize the matrix so that it is the given width and height.
        */
