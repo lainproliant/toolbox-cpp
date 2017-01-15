@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
                m.at(x, y) = 'a' + y * m.height() + x;
             }
          }
-         
+
          cout << "----------" << endl;
          print_matrix(m);
          assert_equal(m.at(0, 0), 'a');
