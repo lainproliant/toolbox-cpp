@@ -22,6 +22,3 @@
 [submodule "include/date"]
 	path = include/date
 	url = https://github.com/HowardHinnant/date
-[submodule "include/argparse"]
-	path = include/argparse
-	url = https://github.com/hbristow/argparse
