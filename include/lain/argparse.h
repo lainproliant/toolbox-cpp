@@ -159,7 +159,7 @@ namespace lain {
       
       vector<string> options(const ArgSpec& argspec) const {
          if (! argspec.has_option) {
-            throw new ArgumentException("Argument does not accept options: " + argspec.to_string());
+            throw ArgumentException("Argument does not accept options: " + argspec.to_string());
          }
 
          vector<string> options;
@@ -241,7 +241,7 @@ namespace lain {
                for (size_t x = 1; x < shortopts.size(); x++) {
                   ArgSpec arg = specs.get(shortopts[x]);
                   if (arg.has_option) {
-                     if (x + 1 < shortopts.size()) {
+                     if (x + 1 < shortopts.size() || next(cursor) == end) {
                         throw ArgumentException("Missing option for parameter: " +
                            arg.to_string());
                      }
@@ -270,18 +270,7 @@ namespace lain {
 
    class ArgumentBuilder {
    public:
-      ArgumentBuilder& arg(char short_form, bool optional = true,
-                           bool has_option = false) {
-         return arg(short_form, "", optional, has_option);
-      }
-
-      ArgumentBuilder& arg(const string& long_form, bool optional = true,
-                           bool has_option = false) {
-         return arg(0, long_form, optional, has_option);
-
-      }
-
-      ArgumentBuilder& arg(char short_form, const string& long_form,
+      ArgumentBuilder arg(char short_form, const string& long_form,
                            bool optional = true, bool has_option = false) {
          ArgSpec spec;
          spec.short_form = short_form;
