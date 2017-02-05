@@ -11,7 +11,7 @@ namespace lain {
    class ValueException : public Exception {
       using Exception::Exception;
    };
-   
+
    namespace util {
       inline void assertTrue(bool expr, const string& message) {
          if (! expr) {
