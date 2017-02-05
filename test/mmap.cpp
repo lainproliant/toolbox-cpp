@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
 
          assert_true(lists_equal(mmap::collect(mmap, "fruit"),
                   {"apple", "orange", "banana", "pear"}));
+         return true;
       })
       .run();
 }

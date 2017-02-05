@@ -15,9 +15,9 @@ int main() {
          Arguments args = ArgumentBuilder()
             .arg('a')
             .arg('b')
-            .arg('n', true, true)
-            .arg('i', "input", true, false)
-            .arg('q', "quest", true, true)
+            .arg('n').required()
+            .arg('i', "input").required().option()
+            .arg('q', "quest").required().option()
             .arg("hardmode")
             .arg("easymode")
             .parse(argv);

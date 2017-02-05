@@ -51,7 +51,7 @@ namespace lain {
       const ArgSpec& get(const string& arg) const {
          auto iter = long_form_map.find(arg);
          if (iter == long_form_map.end()) {
-            throw Exception(tfm::format("Argument '%s' not defined.", arg)); 
+            throw Exception(tfm::format("Argument '%s' not defined.", arg));
          }
          return arg_specs[iter->second];
       }
@@ -84,11 +84,15 @@ namespace lain {
          return *this;
       }
 
+      ArgSpec& back() {
+         return arg_specs.back();
+      }
+
    private:
       vector<ArgSpec> arg_specs;
       map<char, int> short_form_map;
       map<string, int> long_form_map;
-   }; 
+   };
 
    /*------------------------------------------------------------------------*/
    class Arguments {
@@ -146,7 +150,7 @@ namespace lain {
       void add_free_argument(const string& arg) {
          free_args_list.push_back(arg);
       }
-   
+
    protected:
       int count(const ArgSpec& argspec) const {
          auto iter = arg_count_map.find(argspec.id);
@@ -156,7 +160,7 @@ namespace lain {
             return 0;
          }
       }
-      
+
       vector<string> options(const ArgSpec& argspec) const {
          if (! argspec.has_option) {
             throw ArgumentException("Argument does not accept options: " + argspec.to_string());
@@ -202,7 +206,7 @@ namespace lain {
          result.set_program_name(*begin);
 
          for (auto iter = ++begin; iter != argv.end();
-              iter = parse_arg(result, iter, argv.end())) { } 
+              iter = parse_arg(result, iter, argv.end())) { }
 
          return result;
       }
@@ -233,7 +237,7 @@ namespace lain {
             } else {
                result.add_argument(arg);
             }
-            
+
          } else if (str::startsWith(*cursor, "-")) {
             // This is a list of one or more short opts.
             if ((*cursor).size() > 1) {
@@ -249,7 +253,7 @@ namespace lain {
                      result.add_argument(arg, *(++cursor));
 
                   } else {
-                     result.add_argument(arg);                     
+                     result.add_argument(arg);
                   }
                }
 
@@ -270,14 +274,31 @@ namespace lain {
 
    class ArgumentBuilder {
    public:
-      ArgumentBuilder arg(char short_form, const string& long_form,
-                           bool optional = true, bool has_option = false) {
+      ArgumentBuilder& arg(char short_form) {
+         return arg(short_form, "");
+      }
+
+      ArgumentBuilder& arg(const string& long_form) {
+         return arg(0, long_form);
+      }
+
+      ArgumentBuilder& arg(char short_form, const string& long_form) {
          ArgSpec spec;
          spec.short_form = short_form;
          spec.long_form = long_form;
-         spec.optional = optional;
-         spec.has_option = has_option;
+         spec.optional = true;
+         spec.has_option = false;
          argspecs.add(spec);
+         return *this;
+      }
+
+      ArgumentBuilder& required() {
+         argspecs.back().optional = false;
+         return *this;
+      }
+
+      ArgumentBuilder& option() {
+         argspecs.back().has_option = true;
          return *this;
       }
 

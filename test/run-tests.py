@@ -14,12 +14,14 @@ import glob
 import subprocess
 import sys
 
+EXCLUDE = {'./ansi.test'}
+
 def main(argv):
     tests_failed = 0
     modules_failed = 0
 
     tests = glob.glob("./*.test")
-    for test in tests:
+    for test in [t for t in tests if not t in EXCLUDE]:
         num_failed = subprocess.call(test)
         if num_failed > 0:
             modules_failed += 1

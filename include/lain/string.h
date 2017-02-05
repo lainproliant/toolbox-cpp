@@ -4,6 +4,8 @@
 #include <sstream>
 #include <list>
 #include <vector>
+#include <algorithm>
+#include <locale>
 
 namespace lain {
    namespace str {
@@ -29,7 +31,7 @@ namespace lain {
        */
       inline bool endsWith(const string& str, const string& suffix) {
          return suffix.length() <= str.length() &&
-                ! str.compare(suffix.length() - str.length(),
+                ! str.compare(str.length() - suffix.length(),
                               suffix.length(), suffix);
       }
 
@@ -52,7 +54,7 @@ namespace lain {
 
          return sb.str();
       }
-      
+
       /**
        * Split the given string into a list of strings based on
        * the delimiter provided, and insert them into the given
@@ -77,7 +79,7 @@ namespace lain {
             from = to + delimiter.size();
          }
       }
-      
+
 
       /**
        * Split the given string into a list of strings based on
@@ -93,7 +95,7 @@ namespace lain {
          split(tokens, s, delimiter);
          return tokens;
       }
-      
+
       /**
        * Convert argc and argv from main() into a vector of strings.
        *
@@ -106,7 +108,7 @@ namespace lain {
          vector<string> vec;
 
          for (int x = 0; x < argc; x++) {
-            vec.push_back(string(argv[x]));   
+            vec.push_back(string(argv[x]));
          }
 
          return vec;
@@ -123,7 +125,7 @@ namespace lain {
        * given iterable collection.  This can be useful in
        * providing an insight into the structure of the data
        * within the collection.
-       * 
+       *
        * You should define an override of operator<<(const ostream&, T)
        * for the value type of the collection provided unless ones
        * already specified, e.g. for primitives and std::string.
@@ -150,7 +152,7 @@ namespace lain {
        * given map.  This template method will work for any object
        * which implements the interface of std::map, including
        * std::unordered_map.
-       * 
+       *
        * You should define an override of operator<<(const ostream&, T)
        * for the mapped type of the map provided unless ones
        * already specified, e.g. for primitives and std::string.
@@ -178,13 +180,42 @@ namespace lain {
 
          return sb.str();
       }
-      
+
       /**
        * Print a textual representation of the given value.
        */
       template <class T>
       string bool_repr(const T& val) {
          return val ? "true" : "false";
+      }
+
+      /**
+       * Trim all whitespace from the left.
+       */
+      string trim_left(const string& s) {
+         string copy = s;
+         copy.erase(copy.begin(), find_if(copy.begin(), copy.end(), [](int c) {
+            return !isspace(c);
+         }));
+         return copy;
+      }
+
+      /**
+       * Trim all whitespace from the right.
+       */
+      string trim_right(const string& s) {
+         string copy = s;
+         copy.erase(find_if(copy.rbegin(), copy.rend(), [](int c) {
+            return !isspace(c);
+         }).base(), copy.end());
+         return copy;
+      }
+
+      /**
+       * Trim all whitespace from the left or right.
+       */
+      string trim(const string& s) {
+         return trim_left(trim_right(s));
       }
    }
 }
