@@ -20,8 +20,9 @@ namespace lain {
                              ios::openmode mode = ios::in) {
          try {
             ifstream infile;
-            infile.exceptions(ios::badbit);
+            infile.exceptions(ios::failbit);
             infile.open(filename, mode);
+            infile.exceptions(ios::badbit);
             return infile;
 
          } catch (exception& e) {
@@ -35,8 +36,9 @@ namespace lain {
                              ios::openmode = ios::out) {
          try {
             ofstream outfile;
-            outfile.exceptions(ios::badbit);
+            outfile.exceptions(ios::failbit);
             outfile.open(filename);
+            outfile.exceptions(ios::badbit);
             return outfile;
 
          } catch (exception& e) {
@@ -50,8 +52,9 @@ namespace lain {
                              ios::openmode mode = ios::in | ios::out) {
          try {
             fstream outfile;
-            outfile.exceptions(ios::badbit);
+            outfile.exceptions(ios::failbit);
             outfile.open(filename, mode);
+            outfile.exceptions(ios::badbit);
             return outfile;
 
          } catch (exception& e) {
