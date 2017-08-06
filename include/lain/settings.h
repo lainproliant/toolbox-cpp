@@ -16,6 +16,7 @@
 
 #include "lain/maps.h"
 #include "lain/exception.h"
+#include "lain/file.h"
 #include "tinyformat/tinyformat.h"
 #include "picojson/picojson.h"
 
@@ -182,9 +183,8 @@ namespace lain {
       virtual ~Settings() { }
 
       static Settings load_from_file(const string& filename) {
-         ifstream infile;
          shared_ptr<pj::value> obj_value = make_shared<pj::value>();
-         infile.open(filename);
+         ifstream infile = file::open_r(filename);
          infile >> (*obj_value);
 
          if (! obj_value->is<pj::object>()) {
@@ -196,8 +196,7 @@ namespace lain {
       }
 
       void save_to_file(const string& filename, bool prettify = false) const {
-         ofstream outfile;
-         outfile.open(filename);
+         ofstream outfile = file::open_w(filename);
          print(outfile, prettify);
       }
 
